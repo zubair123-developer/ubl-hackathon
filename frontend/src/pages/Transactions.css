@@ -1,0 +1,192 @@
+/* src/pages/Transactions.css */
+
+.transactions-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.transactions-header {
+  margin-bottom: 32px;
+}
+
+.transactions-header h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #F3F4F6;
+}
+
+.transactions-header p {
+  color: #9CA3AF;
+  margin-top: 4px;
+  font-size: 14px;
+}
+
+/* Core Layout Grid split */
+.layout-grid {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+/* Panel Containers */
+.transaction-panel {
+  background-color: #111827;
+  border: 1px solid #1F2937;
+  border-radius: 12px;
+  padding: 24px;
+  flex: 1;
+  min-width: 320px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.transaction-panel.ledger-history {
+  flex: 2;
+}
+
+.panel-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #F3F4F6;
+}
+
+/* Form Styles */
+.transaction-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.form-group label {
+  font-size: 12px;
+  color: #9CA3AF;
+  font-weight: 500;
+}
+
+.form-input,
+.form-select {
+  background-color: #0B0F19;
+  border: 1px solid #1F2937;
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: #FFFFFF;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-input:focus,
+.form-select:focus {
+  border-color: #38BDF8;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
+}
+
+.form-select {
+  cursor: pointer;
+}
+
+/* Form Submit Button */
+.submit-btn {
+  background-color: #34D399;
+  color: #0B0F19;
+  border: none;
+  border-radius: 6px;
+  padding: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.submit-btn:hover {
+  background-color: #059669;
+}
+
+.submit-btn:active {
+  transform: scale(0.98);
+}
+
+.submit-btn:disabled {
+  background-color: #4B5563;
+  color: #9CA3AF;
+  cursor: not-allowed;
+}
+
+/* Audit Table Styles */
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.ledger-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.th-row {
+  border-bottom: 1px solid #1F2937;
+}
+
+.ledger-table th {
+  color: #9CA3AF;
+  font-weight: 500;
+  font-size: 13px;
+  padding-bottom: 12px;
+}
+
+.ledger-table tr {
+  border-bottom: 1px solid #1F2937;
+  transition: background-color 0.2s;
+}
+
+.ledger-table tbody tr:hover {
+  background-color: #1F2937;
+}
+
+.ledger-table td {
+  padding: 12px 0;
+  padding-left: 4px;
+  font-size: 14px;
+  color: #E5E7EB;
+}
+
+/* Dynamic Income/Expense Amount Colors */
+.amount-income {
+  font-weight: 600;
+  color: #34D399;
+}
+
+.amount-expense {
+  font-weight: 600;
+  color: #F87171;
+}
+
+/* Custom UI Tags for Categories */
+.category-tag {
+  background-color: #1E293B;
+  color: #38BDF8;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.loading-text {
+  color: #38BDF8;
+  font-size: 14px;
+}

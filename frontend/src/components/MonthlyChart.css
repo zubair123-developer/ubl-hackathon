@@ -1,0 +1,41 @@
+.chart-panel {
+  background: #111827;
+  border: 1px solid #1f2d45;
+  border-radius: 12px;
+  padding: 22px 22px 16px;
+}
+.chart-panel-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: #8a97b0;
+  margin-bottom: 18px;
+}
+.chart-empty {
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: #3d4f6a;
+  text-align: center;
+  padding: 0 20px;
+}
+.chart-tip {
+  background: #1a2235;
+  border: 1px solid #1f2d45;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 12px;
+  line-height: 1.9;
+  color: #f0f4ff;
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+}
+.tip-month {
+  font-size: 10px;
+  color: #3d4f6a;
+  margin-bottom: 3px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}

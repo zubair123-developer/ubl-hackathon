@@ -1,0 +1,61 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #0B0F19;
+  color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+.app-main {
+  background: #0b0f1a;
+}
+
+/* ── Chart text fixes ───────────────────────────────────────── */
+.recharts-text {
+  fill: #ffffff !important;
+  font-size: 12px !important;
+}
+
+.recharts-cartesian-axis-tick-value {
+  fill: #ffffff !important;
+}
+
+.recharts-legend-item-text {
+  color: #ffffff !important;
+}
+
+.recharts-label {
+  fill: #ffffff !important;
+}
+
+.recharts-tooltip-label {
+  color: #ffffff !important;
+}
+
+.recharts-default-tooltip {
+  background-color: #0d1321 !important;
+  border: 1px solid #172036 !important;
+  border-radius: 8px !important;
+  color: #ffffff !important;
+}
+
+/* ── General text visibility ────────────────────────────────── */
+p, span, h1, h2, h3, h4, h5, label, td, th {
+  color: #ffffff;
+}
+
+text {
+  fill: #ffffff !important;
+}

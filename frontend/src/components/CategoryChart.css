@@ -1,0 +1,32 @@
+/* CategoryChart uses .chart-panel from MonthlyChart.css — just add these */
+.pie-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 0 4px;
+}
+.pie-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #8a97b0;
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(255,255,255,.03);
+}
+.pie-row:last-child { border-bottom: none; }
+.pie-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.pie-cat { flex: 1; font-size: 12px; }
+.pie-pct {
+  color: #3d4f6a;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  min-width: 32px;
+  text-align: right;
+}
