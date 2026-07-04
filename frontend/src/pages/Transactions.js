@@ -1,290 +1,234 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useAuth } from '../App';
+import './Transactions.css';
 
 const BASE_URL = 'http://localhost:4000';
-const USER_ID = 3;
 
-const Transactions = () => {
+const CATEGORIES = [
+  'Salary','Freelance','Food','Utilities',
+  'Transport','Rent','Shopping','Health','Other'
+];
+
+export default function Transactions() {
+  const { token } = useAuth();
+
   const [transactions, setTransactions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading,      setLoading]      = useState(true);
+  const [filter,       setFilter]       = useState('all');
 
-  // Form states
-  const [description, setDescription] = useState('');
-  const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState('Food');
-  const [type, setType] = useState('expense');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [formSubmitting, setFormSubmitting] = useState(false);
+  const [desc,       setDesc]       = useState('');
+  const [amount,     setAmount]     = useState('');
+  const [category,   setCategory]   = useState('Food');
+  const [type,       setType]       = useState('expense');
+  const [date,       setDate]       = useState(new Date().toISOString().split('T')[0]);
+  const [submitting, setSubmitting] = useState(false);
+  const [formErr,    setFormErr]    = useState('');
+  const [showForm,   setShowForm]   = useState(false);
 
-  // Fetch all transactions
   const fetchTransactions = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/transactions/3`);
-const data = response.data;
-setTransactions(Array.isArray(data) ? data : data.transactions || []);
-    } catch (error) {
-      console.error("Error pulling ledger history:", error);
-      // Fallback fallback arrays for immediate display/testing
-      setTransactions([
-        { id: 1, description: 'Salary Credit', amount: 150000, category: 'Salary', type: 'income', date: '2026-06-01' },
-        { id: 2, description: 'Office Grocery', amount: 12000, category: 'Food', type: 'expense', date: '2026-06-05' },
-        { id: 3, description: 'Electricity Bill', amount: 25000, category: 'Utilities', type: 'expense', date: '2026-06-10' },
-      ]);
+      const res = await fetch(`${BASE_URL}/transactions`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setTransactions(Array.isArray(data) ? data : data.transactions || []);
+    } catch (err) {
+      console.error('Fetch error:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchTransactions();
-  }, []);
+  useEffect(() => { fetchTransactions(); }, []);
 
-  // Submit form handler
-  const handleAddTransaction = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!description || !amount) return alert('Please input item descriptions and accurate pricing numbers.');
+    setFormErr('');
+    if (!desc.trim()) return setFormErr('Description is required.');
+    if (!amount || +amount <= 0) return setFormErr('Enter a valid amount.');
 
-    setFormSubmitting(true);
-    const newPayload = {
-      userId: USER_ID,
-      description,
-      amount: parseFloat(amount),
-      category,
-      type,
-      date
-    };
-
+    setSubmitting(true);
     try {
-      // Post to Node.js backend running on port 4000
-     await axios.post(`${BASE_URL}/transactions/add`, newPayload);
-      
-      // Clear form inputs
-      setDescription('');
+      const res = await fetch(`${BASE_URL}/transactions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          description: desc,
+          amount: parseFloat(amount),
+          category,
+          type,
+          date,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Failed to save');
+      }
+      setDesc('');
       setAmount('');
-      
-      // Refresh list live
+      setDate(new Date().toISOString().split('T')[0]);
+      setShowForm(false);
       await fetchTransactions();
-    } catch (error) {
-      console.error("Failed submitting tracking record:", error);
-      // Fallback mutation for visual demo purposes
-      setTransactions(prev => [
-        { id: Date.now(), ...newPayload },
-        ...prev
-      ]);
+    } catch (err) {
+      setFormErr(err.message);
     } finally {
-      setFormSubmitting(false);
+      setSubmitting(false);
     }
   };
 
-  return (
-    <div>
-      <header style={{ marginBottom: '32px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700' }}>Transactions Book</h2>
-        <p style={{ color: '#9CA3AF', marginTop: '4px' }}>Log new entries or inspect your immutable ledger historical entries.</p>
-      </header>
+  const displayed = filter === 'all'
+    ? transactions
+    : transactions.filter(t => t.type === filter);
 
-      <div style={styles.layoutGrid}>
-        {/* 📥 Entry Form Component */}
-        <div style={styles.panel}>
-          <h4 style={styles.panelTitle}>Log Transaction</h4>
-          <form onSubmit={handleAddTransaction} style={styles.form}>
-            <div style={styles.formGroup}>
-              <label style={styles.label}>Description</label>
+  const income   = transactions.filter(t => t.type === 'income')
+                               .reduce((s, t) => s + +t.amount, 0);
+  const expenses = transactions.filter(t => t.type === 'expense')
+                               .reduce((s, t) => s + +t.amount, 0);
+
+  const pkr = n => 'PKR ' + Math.round(Math.abs(n)).toLocaleString();
+
+  return (
+    <div className="txn-page">
+
+      <div className="txn-header">
+        <div>
+          <h1 className="txn-title">Transactions</h1>
+          <p className="txn-sub">
+            {transactions.length} entries | {pkr(income)} in | {pkr(expenses)} out
+          </p>
+        </div>
+        <button
+          className="txn-add-btn"
+          onClick={() => { setShowForm(s => !s); setFormErr(''); }}
+        >
+          {showForm ? 'X Cancel' : '+ Add transaction'}
+        </button>
+      </div>
+
+      {showForm && (
+        <div className="txn-form-card">
+          <p className="txn-form-title">New transaction</p>
+          <form onSubmit={handleSubmit} className="txn-form" noValidate>
+            {formErr && <div className="txn-form-err">{formErr}</div>}
+
+            <div className="txn-field-full">
+              <label>Description</label>
               <input
                 type="text"
-                placeholder="e.g., Cloud Server Subscription"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                style={styles.input}
+                placeholder="e.g. Monthly salary, Groceries"
+                value={desc}
+                onChange={e => setDesc(e.target.value)}
               />
             </div>
 
-            <div style={styles.formRow}>
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Amount (Rs.)</label>
+            <div className="txn-form-row">
+              <div className="txn-field">
+                <label>Amount (PKR)</label>
                 <input
                   type="number"
-                  placeholder="2500"
+                  min="0"
+                  placeholder="0"
                   value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  style={styles.input}
+                  onChange={e => setAmount(e.target.value)}
                 />
               </div>
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Log Type</label>
-                <select value={type} onChange={(e) => setType(e.target.value)} style={styles.select}>
+              <div className="txn-field">
+                <label>Type</label>
+                <select value={type} onChange={e => setType(e.target.value)}>
                   <option value="expense">Expense</option>
                   <option value="income">Income</option>
                 </select>
               </div>
-            </div>
-
-            <div style={styles.formRow}>
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Category</label>
-                <select value={category} onChange={(e) => setCategory(e.target.value)} style={styles.select}>
-                  <option value="Salary">Salary</option>
-                  <option value="Freelance">Freelance</option>
-                  <option value="Food">Food</option>
-                  <option value="Utilities">Utilities</option>
-                  <option value="Transport">Transport</option>
-                  <option value="Other">Other</option>
+              <div className="txn-field">
+                <label>Category</label>
+                <select value={category} onChange={e => setCategory(e.target.value)}>
+                  {CATEGORIES.map(c => <option key={c}>{c}</option>)}
                 </select>
               </div>
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Date</label>
+              <div className="txn-field">
+                <label>Date</label>
                 <input
                   type="date"
                   value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  style={styles.input}
+                  onChange={e => setDate(e.target.value)}
                 />
               </div>
             </div>
 
-            <button type="submit" style={styles.submitBtn} disabled={formSubmitting}>
-              {formSubmitting ? 'Writing to Ledger...' : 'Insert Record'}
+            <button type="submit" className="txn-submit-btn" disabled={submitting}>
+              {submitting ? <span className="spin" /> : 'Save transaction'}
             </button>
           </form>
         </div>
+      )}
 
-        {/* 📑 Tabular Audit Table Component */}
-        <div style={{ ...styles.panel, flex: 2 }}>
-          <h4 style={styles.panelTitle}>Complete Ledger History</h4>
-          {loading ? (
-            <p style={{ color: '#38BDF8' }}>Updating database references...</p>
-          ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={styles.table}>
-                <thead>
-                  <tr style={styles.thRow}>
-                    <th style={styles.th}>Details</th>
-                    <th style={styles.th}>Category</th>
-                    <th style={styles.th}>Date</th>
-                    <th style={styles.th}>Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {transactions.map((tx) => (
-                    <tr key={tx.id} style={styles.tr}>
-                      <td style={styles.td}>{tx.description}</td>
-                      <td style={styles.td}><span style={styles.tag}>{tx.category}</span></td>
-                      <td style={styles.td}>{tx.date}</td>
-                      <td style={{ ...styles.td, fontWeight: '600', color: tx.type === 'income' ? '#34D399' : '#F87171' }}>
-                        {tx.type === 'income' ? '+' : '-'} Rs. {Math.abs(tx.amount).toLocaleString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+      <div className="txn-filters">
+        {[
+          { key: 'all',     label: 'All' },
+          { key: 'income',  label: 'Income' },
+          { key: 'expense', label: 'Expenses' },
+        ].map(f => (
+          <button
+            key={f.key}
+            className={`txn-pill${filter === f.key ? ' active' : ''}`}
+            onClick={() => setFilter(f.key)}
+          >
+            {f.label}
+          </button>
+        ))}
+        <span className="txn-pill-count">{displayed.length} shown</span>
       </div>
+
+      {loading ? (
+        <div className="txn-loading"><span className="spin" /></div>
+      ) : displayed.length === 0 ? (
+        <div className="txn-empty">
+          <p>No transactions yet</p>
+          <span>Click Add transaction to log your first entry</span>
+        </div>
+      ) : (
+        <div className="txn-table-wrap">
+          <table className="txn-table">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Type</th>
+                <th>Date</th>
+                <th style={{ textAlign: 'right' }}>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {displayed.map(tx => (
+                <tr key={tx.id}>
+                  <td className="txn-td-desc">{tx.description}</td>
+                  <td>
+                    <span className="txn-badge">{tx.category || 'Other'}</span>
+                  </td>
+                  <td>
+                    <span className={`txn-type-badge ${tx.type}`}>
+                      {tx.type === 'income' ? 'Income' : 'Expense'}
+                    </span>
+                  </td>
+                  <td className="txn-td-date">
+                    {new Date(tx.date || tx.created_at).toLocaleDateString('en-PK', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric'
+                    })}
+                  </td>
+                  <td className={`txn-td-amount ${tx.type}`} style={{ textAlign: 'right' }}>
+                    {tx.type === 'income' ? '+' : '-'}{pkr(tx.amount)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
-};
-
-const styles = {
-  layoutGrid: {
-    display: 'flex',
-    flexDirection: 'row',
-    gap: '24px',
-    alignItems: 'flex-start',
-    flexWrap: 'wrap'
-  },
-  panel: {
-    backgroundColor: '#111827',
-    border: '1px solid #1F2937',
-    borderRadius: '12px',
-    padding: '24px',
-    flex: '1',
-    minWidth: '320px'
-  },
-  panelTitle: {
-    fontSize: '18px',
-    fontWeight: '600',
-    marginBottom: '20px',
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-  },
-  formRow: {
-    display: 'flex',
-    gap: '12px',
-  },
-  formGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '6px',
-    flex: 1,
-  },
-  label: {
-    fontSize: '12px',
-    color: '#9CA3AF',
-    fontWeight: '500',
-  },
-  input: {
-    backgroundColor: '#0B0F19',
-    border: '1px solid #1F2937',
-    borderRadius: '6px',
-    padding: '10px 12px',
-    color: '#FFF',
-    fontSize: '14px',
-    outline: 'none',
-  },
-  select: {
-    backgroundColor: '#0B0F19',
-    border: '1px solid #1F2937',
-    borderRadius: '6px',
-    padding: '10px 12px',
-    color: '#FFF',
-    fontSize: '14px',
-    outline: 'none',
-    cursor: 'pointer',
-  },
-  submitBtn: {
-    backgroundColor: '#34D399',
-    color: '#0B0F19',
-    border: 'none',
-    borderRadius: '6px',
-    padding: '12px',
-    fontWeight: '600',
-    fontSize: '14px',
-    cursor: 'pointer',
-    marginTop: '8px',
-  },
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse',
-    textAlign: 'left',
-  },
-  thRow: {
-    borderBottom: '1px solid #1F2937',
-  },
-  th: {
-    color: '#9CA3AF',
-    fontWeight: '500',
-    fontSize: '13px',
-    paddingBottom: '12px',
-  },
-  tr: {
-    borderBottom: '1px solid #1F2937',
-  },
-  td: {
-    padding: '12px 0',
-    fontSize: '14px',
-    color: '#E5E7EB',
-  },
-  tag: {
-    backgroundColor: '#1E293B',
-    color: '#38BDF8',
-    padding: '4px 8px',
-    borderRadius: '6px',
-    fontSize: '12px',
-  }
-};
-
-export default Transactions;
+}
